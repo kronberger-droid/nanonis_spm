@@ -50,4 +50,8 @@ nanonisInstance.BiasSwp_LimitsSet(np.float32(1), np.float32(2))
 
 We hereby ensure that the arguments are of the correct size.
 
+## Change Log
+
+### 1.0.3
+Added the function Util.VersionGet to get the software version, the MCVA5 preamplifier functions, the V5e Generic PI Controller functions, and all the MultiProbe functions (Bias, Current, Z-Controller, and scanner control) needed in a MultiProbe system. 
 
