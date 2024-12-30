@@ -2603,7 +2603,7 @@ class Nanonis:
         Piezo.DriftCompSet
         Configures the drift compensation parameters.
         Arguments: 
-        -- Compensation on/off (unsigned int32) activates or deactivates the drift compensation
+        -- Compensation on/off (unsigned int32) activates or deactivates the drift compensation, where 0=no change, 1=On, 2=Off
         -- Vx (m/s) (float32) is the linear speed applied to the X piezo to compensate the drift
         -- Vy (m/s) (float32) is the linear speed applied to the Y piezo to compensate the drift
         -- Vz (m/s) (float32) is the linear speed applied to the Z piezo to compensate the drift
@@ -3994,11 +3994,13 @@ class Nanonis:
         
         -- Number of channels (int) is the number of recorded channels. It defines the size of the Channel indexes array
         -- Channel indexes (1D array int) are the indexes of the recorded channels. The indexes correspond to the list of Measurement in the Nanonis software.
-        To get the Measurements  names use the <i>Signals.MeasNamesGet </i>function
+        -	Channels names size (int) is the size in bytes of the Channels names string array
+        -	Number of channels (int) is the number of elements of the Channels names string array
+        -	Channels names (1D array string) returns the list of recorded channels names. The size of each string item comes right before it as integer 32
         -- Error described in the Response message&gt;Body section
         
         """
-        return self.quickSend("GenSwp.AcqChsGet", [], [], ["i", "*i"])
+        return self.quickSend("GenSwp.AcqChsGet", [], [], ["i", "*i", "i", "i", "*+c"])
 
     def GenSwp_SwpSignalSet(self, Sweep_channel_name):
         """
@@ -4024,13 +4026,25 @@ class Nanonis:
         
         -- Sweep channel name size (int) is the number of characters of the sweep channel name string
         -- Sweep channel name (string) is the name of the signal selected for the sweep channel
-        -- Channels names size (int) is the size in bytes of the Channels names string array
-        -- Number of channels (int) is the number of elements of the Channels names string array
-        -- Channels names (1D array string) returns the list of channels names. The size of each string item comes right before it as integer 32
         -- Error described in the Response message&gt;Body section
         
         """
-        return self.quickSend("GenSwp.SwpSignalGet", [], [], ["i", "*-c", "i", "i", "*+c"])
+        return self.quickSend("GenSwp.SwpSignalGet", [], [], ["i", "*-c"])
+
+    def GenSwp_SwpSignalListGet(self):
+        """
+        GenSwp.SwpSignalListGet
+        Returns the list of names of available signals to sweep in the Generic Sweeper.
+        Arguments: None
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -	Channels names size (int) is the size in bytes of the Channels names string array
+        -	Number of channels (int) is the number of elements of the Channels names string array
+        -	Channels names (1D array string) returns the list of channels names. The size of each string item comes right before it as integer 32
+        -	Error described in the Response message>Body section
+
+        """
+        return self.quickSend("GenSwp.SwpSignalListGet", [], [], ["i", "i", "*+c"])
 
     def GenSwp_LimitsSet(self, Lower_limit, Upper_limit):
         """
@@ -4071,8 +4085,8 @@ class Nanonis:
         -- Maximum slew rate (units/s) (float32) 
         -- Number of steps (int) defines the number of steps of the sweep. 0 points means no change
         -- Period (ms) (unsigned int16) where 0 means no change
-        -- Autosave (int) defines if the sweep is automatically saved, where -1_no change, 0_Off, 1_On
-        -- Save dialog box (int) defines if the save dialog box shows up or not, where -1_no change, 0_Off, 1_On
+        -- Autosave (int) defines if the sweep is automatically saved, where 0=no change, 1=On, 2=Off
+        -- Save dialog box (int) defines if the save dialog box shows up or not, where 0=no change, 1=On, 2=Off
         -- Settling time (ms) (float32) 
         
         Return arguments (if Send response back flag is set to True when sending request message):
@@ -4340,7 +4354,7 @@ class Nanonis:
         """
         return self.quickSend("HSSwp.ResetSignalsGet", [], [], ["i"])
 
-    def HSSwp_SaveBasenameSet(self, Basename):
+    def HSSwp_SaveBasenameSet(self, Basename, Path):
         """
         HSSwp.SaveBasenameSet
         Sets the save basename in the High-Speed Sweeper.
@@ -4349,12 +4363,15 @@ class Nanonis:
 
         - Basename size (int) is the size (number of characters) of the basename string
         - Basename (string) is the base name used for the saved sweeps
+        - Path size (int) is the size (number of characters) of the path string
+        - Path (string) is the path used for the saved sweeps
+
 
         Return arguments (if Send response back flag is set to True when sending request message to the server):
 
         - Error described in the Response message>Body section
         """
-        return self.quickSend("HSSwp.SaveBasenameSet", [Basename], ["+*c"], [])
+        return self.quickSend("HSSwp.SaveBasenameSet", [Basename, Path], ["+*c", "+*c"], [])
 
     def HSSwp_SaveBasenameGet(self):
         """
@@ -4368,10 +4385,12 @@ class Nanonis:
 
         - Basename size (int) is the size (number of characters) of the basename string
         - Basename (string) is the base name used for the saved sweeps
+        - Path size (int) is the size (number of characters) of the path string
+        - Path (string) is the path used for the saved sweeps
         - Error described in the Response message>Body section
 
         """
-        return self.quickSend("HSSwp.SaveBasenameGet", [], [], ["i", "*-c"])
+        return self.quickSend("HSSwp.SaveBasenameGet", [], [], ["i", "*-c", "*-c"])
 
     def HSSwp_SaveDataSet(self, SaveData):
         """
@@ -4923,6 +4942,159 @@ class Nanonis:
         Atom Tracking
         """
         return self.quickSend("GenPICtrl.PropsGet", [], [], ["f", "f", "f", "H"])
+
+    def PICtrl_OnOffSet(self, Controller_Index, Controller_Status):
+        """
+        PICtrl.OnOffSet
+        Switches the Generic PI Controller On or Off.
+        Arguments:
+        - Controller index (int32) is the index of the controller. Valid values are 1 to 8.
+        - Controller status (unsigned int32) switches the controller Off (=0) or On (=1)
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("PICtrl.OnOffSet", [Controller_Index, Controller_Status], ["i", "I"], [])
+
+    def PICtrl_OnOffGet(self, Controller_Index):
+        """
+        PICtrl.OnOffGet
+        Returns the status of the Generic PI Controller.
+        Arguments:
+        - Controller index (int32) is the index of the controller. Valid values are 1 to 8.
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Controller status (unsigned int32) indicates if the controller is Off (=0) or On (=1)
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("PICtrl.OnOffGet", [Controller_Index], ["i"], ["I"])
+
+    def PICtrl_CtrlChSet(self, Controller_Index, CtrlSignal_Index):
+        """
+        PICtrl.CtrlChSet
+        Sets the index of the output controlled by the Generic PI controller.
+        Arguments:
+        - Controller index (int) is the index of the controller. Valid values are 1 to 8.
+        - Control signal index (int) sets the output index to be used.
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("PICtrl.CtrlChSet", [Controller_Index, CtrlSignal_Index], ["i", "i"], [])
+
+    def PICtrl_CtrlChGet(self, Controller_Index):
+        """
+        PICtrl.CtrlChGet
+        Gets the index of the output controlled by the Generic PI controller.
+        Arguments:
+        - Controller index (int) is the index of the controller. Valid values are 1 to 8.
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Control signal index (int) returns the output index to be used.
+        - Control signals names size (int) is the size in bytes of the Control Signals Names array
+        - Number of Control signals names (int) is the number of elements of the Control Signals Names array
+        - Control signals names (1D array string) returns an array of Control Signals Names. Each element of the array is preceded by its size in bytes
+        - Number of Control signals indexes (int) is the number of elements of the Control Signals Indexes array
+        - Control signals indexes (1D array int) returns an array of Control Signals Indexes
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("PICtrl.CtrlChGet", [Controller_Index], ["i"], ["i", "i", "i", "*+c", "i", "*i"])
+
+    def PICtrl_InputChSet(self, Controller_Index, Input_Index):
+        """
+        PICtrl.InputChSet
+        Sets the index of the input channel in the Generic PI controller.
+        Arguments:
+        - Controller index (int) is the index of the controller. Valid values are 1 to 8.
+        - Input index (int) sets the input index to be used.
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("PICtrl.InputChSet", [Controller_Index, Input_Index], ["i", "i"], [])
+
+    def PICtrl_InputChGet(self, Controller_Index):
+        """
+        PICtrl.InputChGet
+        Gets the index of the input channel in the Generic PI controller.
+        Arguments:
+        - Controller index (int) is the index of the controller. Valid values are 1 to 8.
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Input index (int) returns the input index to be used.
+        - Input signals names size (int) is the size in bytes of the Input Signals Names array
+        - Number of Input signals names (int) is the number of elements of the Input Signals Names array
+        - Input signals names (1D array string) returns an array of Input Signals Names. Each element of the array is preceded by its size in bytes
+        - Number of Input signals indexes (int) is the number of elements of the Input Signals Indexes array
+        - Input signals indexes (1D array int) returns an array of Input Signals Indexes
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("PICtrl.InputChGet", [Controller_Index], ["i"], ["i", "i", "i", "*+c", "i", "*i"])
+
+    def PICtrl_PropsSet(self, Controller_Index, Setpoint, P_Gain, I_Gain, Slope):
+        """
+        PICtrl.PropsSet
+        Sets the properties of the Generic PI controller.
+        Arguments:
+        - Controller index (int32) is the index of the controller. Valid values are 1 to 8.
+        - Setpoint (float32) 
+        - P gain (float32) 
+        - I gain (float32) 
+        - Slope (unsigned int16) where 0 means no change, 1 means Positive, and 2 means Negative
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("PICtrl.PropsSet", [Controller_Index, Setpoint, P_Gain, I_Gain, Slope], ["i", "f", "f", "f", "H"], [])
+
+    def PICtrl_PropsGet(self, Controller_Index):
+        """
+        PICtrl.PropsGet
+        Gets the properties of the Generic PI controller.
+        Arguments:
+        - Controller index (int32) is the index of the controller. Valid values are 1 to 8.
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Setpoint (float32) 
+        - P gain (float32) 
+        - I gain (float32) 
+        - Slope (unsigned int16) where 0 means Positive, and 1 means Negative
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("PICtrl.PropsGet", [Controller_Index], ["i"], ["f", "f", "f", "H"])
+
+    def PICtrl_CtrlChPropsSet(self, Controller_Index, Lower_Limit, Upper_Limit):
+        """
+        PICtrl.CtrlChPropsSet
+        Sets the properties of the control signal in the Generic PI controller.
+        Arguments:
+        - Controller index (int32) is the index of the controller. Valid values are 1 to 8.
+        - Lower_Limit (float32) 
+        - Upper_Limit (float32) 
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("PICtrl.CtrlChPropsSet", [Controller_Index, Lower_Limit, Upper_Limit], ["i", "f", "f"], [])
+
+    def PICtrl_CtrlChPropsGet(self, Controller_Index):
+        """
+        PICtrl.CtrlChPropsGet
+        Gets the properties of the control signal in the Generic PI controller.
+        Arguments:
+        - Controller index (int32) is the index of the controller. Valid values are 1 to 8.
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Lower_Limit (float32) 
+        - Upper_Limit (float32) 
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("PICtrl.CtrlChPropsGet", [Controller_Index], ["i"], ["f", "f"])
 
     def AtomTrack_CtrlSet(self, AT_control, Status):
         """
@@ -6954,11 +7126,26 @@ class Nanonis:
         """
         return self.quickSend("OCSync.LinkAnglesGet", [], [], ["I", "I"])
 
-    def Script_Load(self, Script_file_path, Load_session):
+    def Script_Open(self):
+    """
+    Script.Open
+    Opens the Script module.
+    Arguments: None
+    
+    Return arguments (if Send response back flag is set to True when sending request message):
+    - Error described in the Response message>Body section
+    
+    
+    """
+        return self.quickSend("Script.Open", [], [], [])
+
+    def Script_Load(self, Script_index, Script_file_path, Load_session):
         """
         Script.Load
         Loads a script in the script module.
         Arguments:
+        -- Script index (int) sets the slot where the script will be loaded and covers a range from 1 (first script) to the 
+            total number of scripts. A value of -1 sets the currently selected script slot.
         -- Script file path size (int) is the number of characters of the script file path string
         -- Script file path (string) is the path of the script file to load
         -- Load session (unsigned int32) automatically loads the scripts from the session file bypassing the script file path argument, where 0_False and 1_True  
@@ -6969,14 +7156,16 @@ class Nanonis:
         
         
         """
-        return self.quickSend("Script.Load", [Script_file_path, Load_session], ["+*c", "I"],
+        return self.quickSend("Script.Load", [Script_index, Script_file_path, Load_session], ["i","+*c", "I"],
                               [])
 
-    def Script_Save(self, Script_file_path, Save_session):
+    def Script_Save(self, Script_index, Script_file_path, Save_session):
         """
         Script.Save
         Saves the current script in the specified .ini file.
         Arguments:
+        -- Script index (int) sets the slot where the script will be loaded and covers a range from 1 (first script) to the 
+            total number of scripts. A value of -1 sets the currently selected script slot.
         -- Script file path size (int) is the number of characters of the script file path string
         -- Script file path (string) is the path of the script file to save
         -- Save session (unsigned int32) automatically saves the current script into the session file bypassing the script file path argument, where 0_False and 1_True  
@@ -6987,7 +7176,7 @@ class Nanonis:
         
         
         """
-        return self.quickSend("Script.Save", [Script_file_path, Save_session], ["+*c", "I"],
+        return self.quickSend("Script.Save", [Script_index, Script_file_path, Save_session], ["i","+*c", "I"],
                               [])
 
     def Script_Deploy(self, Script_index):
@@ -6995,7 +7184,7 @@ class Nanonis:
         Script.Deploy
         Deploys a script in the script module.
         Arguments: 
-        -- Script index (int) sets the script to deploy and covers a range from 0 (first script) to the total number of scripts minus one. A value of -1 sets the currently selected script to deploy.
+        -- Script index (int) sets the script to deploy and covers a range from 1 (first script) to the total number of scripts. A value of -1 sets the currently selected script to deploy.
         
         Return arguments (if Send response back flag is set to True when sending request message):
         
@@ -7009,7 +7198,7 @@ class Nanonis:
         Script.Undeploy
         Undeploys a script in the script module.
         Arguments: 
-        -- Script index (int) sets the script to undeploy and covers a range from 0 (first script) to the total number of scripts minus one. A value of -1 sets the currently selected script to undeploy.
+        -- Script index (int) sets the script to undeploy and covers a range from 1 (first script) to the total number of scripts. A value of -1 sets the currently selected script to undeploy.
         
         Return arguments (if Send response back flag is set to True when sending request message):
         
@@ -7023,7 +7212,7 @@ class Nanonis:
         Script.Run
         Runs a script in the script module.
         Arguments: 
-        -- Script index (int) sets the script to run and covers a range from 0 (first script) to the total number of scripts minus one. A value of -1 sets the currently selected script to run.
+        -- Script index (int) sets the script to run and covers a range from 1 (first script) to the total number of scripts. A value of -1 sets the currently selected script to run.
         -- Wait until script finishes (unsigned int32), where 0_False and 1_True 
         
         Return arguments (if Send response back flag is set to True when sending request message):
@@ -7101,7 +7290,7 @@ class Nanonis:
         """
         return self.quickSend("Script.DataGet", [Acquire_buffer, Sweep_number], ["H", "i"], ["i", "i", "2f"])
 
-    def Script_Autosave(self, Acquire_buffer, Sweep_number, All_sweeps_to_same_file):
+    def Script_Autosave(self, Acquire_buffer, Sweep_number, All_sweeps_to_same_file, Folder_path, Basename):
         """
         Script.Autosave
         Saves automatically to file the data stored in the Acquire Buffers after running a script in the Script module.
@@ -7112,15 +7301,92 @@ class Nanonis:
         Each sweep is configured as such in the script and it corresponds to each plot displayed in the graphs of the Script module. 
         The sweep numbers start at 0. A value of -1 saves all acquired sweeps.
         -- All sweeps to same file (unsigned int32) decides if all sweeps defined by the Sweep number parameter are saved to the same file (_1) or not (_0).
-        
+        - Folder path path size (int) is the number of characters of the folder path string
+        - Folder path (string) is the folder where the file will be saved. If nothing is sent, the saving routine uses the 
+            last used path.
+        - Basename path size (int) is the number of characters of the basename string
+        - Basename (string) is the basename of the file to save. If nothing is sent, the saving routine uses the last 
+            used basename.
+
         Return arguments (if Send response back flag is set to True when sending request message):
         
         -- Error described in the Response message&gt;Body section
         
         Interferometer
         """
-        return self.quickSend("Script.Autosave", [Acquire_buffer, Sweep_number, All_sweeps_to_same_file],
-                              ["H", "i", "I"], [])
+        return self.quickSend("Script.Autosave", [Acquire_buffer, Sweep_number, All_sweeps_to_same_file, Folder_path, Basename],
+                              ["H", "i", "I", "+*c", "+*c"], [])
+
+    def Script_LUTOpen(self):
+    """
+    Script.LUTOpen
+    Opens the LUT (Look Up Table) Editor from the Script module.
+    Arguments: None
+    
+    Return arguments (if Send response back flag is set to True when sending request message):
+    - Error described in the Response message>Body section
+    
+    
+    """
+        return self.quickSend("Script.LUTOpen", [], [], [])
+
+    def Script_LUTLoad(self, Script_index, Script_file_path, LUT_Values):
+        """
+        Script.LUTLoad
+        Loads a LUT from file or directly by setting an array of values into the LUT Editor in the script module.
+        Arguments: 
+        - LUT index (int) sets the LUT to load and covers a range from 1 (first LUT) to the total number of LUTs
+        - File path size (int) is the number of characters of the File path string
+        - File path (string) is the path of the file containing a list of values to load into the selected LUT. The 
+            extension of the file must be .luts. If nothing is sent, it will use the values sent by the LUT values argument.
+        - LUT values size (int) is the size of the LUT values array
+        - LUT values (1D array float32)
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        
+        """
+        return self.quickSend("Script.LUTLoad", [Script_index, Script_file_path, LUT_Values], ["i","+*c", "*f"],
+                              [])
+
+    def Script_LUTSave(self, Script_index, Script_file_path):
+        """
+        Script.LUTSave
+        Saves a LUT to file.
+        Arguments: 
+        - LUT index (int) sets the LUT to save and covers a range from 1 (first LUT) to the total number of LUTs
+        - File path size (int) is the number of characters of the File path string
+        - File path (string) is the path of the file where the selected LUT will be saved. The extension of the file 
+            must be .luts
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        
+        """
+        return self.quickSend("Script.LUTSave", [Script_index, Script_file_path], ["i","+*c"],
+                              [])
+
+    def Script_LUTDeploy(self, Script_index, Wait_until_finished, Timeout_ms):
+        """
+        Script.LUTDeploy
+        Deploys a LUT from the LUT Editor in the script module.
+        Arguments: 
+        - LUT index (int) sets the LUT to deploy and covers a range from 1 (first LUT) to the total number of LUTs
+        - Wait until finished (unsigned int32) decides if the function waits until the LUT is fully deployed, as it 
+            might take some time.
+        - Timeout (ms) (int) sets the number of milliseconds to wait until the LUT is fully deployed. -1 waits 
+            forever.
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("Script.LUTDeploy", [Script_index, Wait_until_finished, Timeout_ms], ["i", "I", "i"], [])
 
     def Interf_CtrlOnOffSet(self, Status):
         """
@@ -7800,7 +8066,7 @@ class Nanonis:
         """
         return self.quickSend("UserOut.CalcSignalConfigGet", [Output_index], ["i"], ["H", "H", "H"])
 
-    def UserOut_LimitsSet(self, Output_index, Upper_limit, Lower_limit):
+    def UserOut_LimitsSet(self, Output_index, Upper_limit, Lower_limit, Raw_limits):
         """
         UserOut.LimitsSet
         Sets the physical limits (in calibrated units) of the selected output channel.
@@ -7808,20 +8074,22 @@ class Nanonis:
         -- Output index (int) sets the output to be used, where index could be any value from 1 to the number of available outputs
         -- Upper limit (float32) defines the upper physical limit of the user output
         -- Lower limit (float32) defines the lower physical limit of the user output
+        -- Raw limits? (unsigned int32) selects whether to set the physical limits (0) or the raw limits (1)
         
         Return arguments (if Send response back flag is set to True when sending request message):
         
         -- Error described in the Response message&gt;Body section
         
         """
-        return self.quickSend("UserOut.LimitsSet", [Output_index, Upper_limit, Lower_limit], ["i", "f", "f"], [])
+        return self.quickSend("UserOut.LimitsSet", [Output_index, Upper_limit, Lower_limit, Raw_limits], ["i", "f", "f", "I"], [])
 
-    def UserOut_LimitsGet(self, Output_index):
+    def UserOut_LimitsGet(self, Output_index, Raw_limits):
         """
         UserOut.LimitsGet
         Returns the physical limits (in calibrated units) of the selected output channel.
         Arguments: 
         -- Output index (int) sets the output to be used, where index could be any value from 1 to the number of available outputs
+        -- Raw limits? (unsigned int32) selects whether to set the physical limits (0) or the raw limits (1)
         
         Return arguments (if Send response back flag is set to True when sending request message):
         
@@ -7835,7 +8103,7 @@ class Nanonis:
         
         Digital Lines
         """
-        return self.quickSend("UserOut.LimitsGet", [Output_index], ["i"], ["f", "f"])
+        return self.quickSend("UserOut.LimitsGet", [Output_index, Raw_limits], ["i", "I"], ["f", "f"])
 
     def DigLines_PropsSet(self, Digital_line, Port, Direction, Polarity):
         """
@@ -9791,6 +10059,59 @@ class Nanonis:
         """
         return self.quickSend("Util.RTOversamplSet", [RT_oversampling], ["i"], [])
 
+    def Util_RTOversamplGet(self):
+        """
+        Returns the Real-time oversampling in the TCP Receiver.
+        Arguments:
+        None
+        Return arguments (if Send response back flag is set to True when sending request message):
+
+        - RT oversampling (int)
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("Util.RTOversamplGet", [], [], ["i"])
+
+    def Util_Quit(self, Use_Stored_Values, Settings_Name, Layout_Name, Save_Signals):
+        """
+        Quits the Nanonis software with the option to save settings, layout and signals (same functionality provided by the dialog window that pops-up when quitting the software through the File menu).
+        Arguments:
+
+        - Use the stored values (unsigned int32) automatically ignores the rest of the arguments (0=False and 1=True) and saves settings, layout, and signals according to the last time the software quit.
+        This configuration is stored in the Main-Options settings.ini file located in the Certificate folder.
+        - Settings name size (int) is the number of characters of the Settings name string
+        - Settings name (string) is the name of the settings file to save when quitting. The list of settings can be
+        found in the Settings section of the Main Options under the File menu.
+        If left empty, no settings are saved (unless the argument “Use the stored values” is 1).
+        - Layout name size (int) is the number of characters of the Layout name string
+        - Layout name (string) is the name of the layout file to save when quitting. The list of layouts can be found
+        in the Layouts section of the Main Options under the File menu.
+        If left empty, no layout is saved (unless the argument “Use the stored values” is 1).
+        - Save signals (unsigned int32) automatically saves (0=False and 1=True) the signal configuration currently
+        set in the Signals Manager if it has been changed.
+        The signals configuration is stored in the Signals settings.ini file located in the Certificate folder.
+
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Error described in the Response message>Body section
+        """
+
+        return self.quickSend("Util.Quit", [Use_Stored_Values, Settings_Name, Layout_Name, Save_Signals], ["I", "+*c", "+*c", "I"], [])
+
+    def Util_VersionGet(self):
+        """
+        Returns the version information of the Nanonis software.
+        Arguments:
+        None
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Product Line size (int) is the number of characters of the Product Line string
+        - Product Line (string) returns “Nanonis SPM Control Software” or “Nanonis Tramea Software”.
+        - Version size (int) is the number of characters of the Version string
+        - Version (string) returns the software version (e.g. Generic 5)
+        - Host App. Release (unsigned int32) returns the host application release number.
+        - RT Engine release (unsigned int32) returns the RT Engine application release number.
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("Util.VersionGet", [], [], ["+*c", "+*c", "I", "I"])
+
     def APRFGen_RFOutOnOffSet(self, RF_Output: np.uint32):
         """
         APRFGen.RFOutOnOffSet
@@ -10184,6 +10505,714 @@ class Nanonis:
         """
         return self.quickSend("APRFGen.TrigPropsGet", [], [],
                               ["H", "f", "H", "H", "H", "H"])
+
+    def MCVA5_UserInSet(self, Preamp_Nr, Channel_Nr, User_Input):
+        """
+        MCVA5.UserInSet
+        Assigns a user input to one of the four channels of the selected preamplifier.
+        Arguments:
+        - Preamplifier Nr. (unsigned int16) is the preamplifier module number, where valid values are 1, 2, 3, 4
+        - Channel Nr. (unsigned int16) is the channel number out of the four available channels in the MCVA5 preamplifier, where valid values are 1, 2, 3, 4
+        - User Input (unsigned int32) is the user input number that will be assigned to the selected channel of the selected preamplifier  
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("MCVA5.UserInSet", [Preamp_Nr, Channel_Nr], ["H", "H", "I"], [])
+
+    def MCVA5_UserInGet(self, Preamp_Nr, Channel_Nr):
+        """
+        MCVA5.UserInGet
+        Returns the user input assigned to the selected channel of the selected preamplifier.
+        Arguments:
+        - Preamplifier Nr. (unsigned int16) is the preamplifier module number, where valid values are 1, 2, 3, 4
+        - Channel Nr. (unsigned int16) is the channel number out of the four available channels in the MCVA5 preamplifier, where valid values are 1, 2, 3, 4
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - User Input (unsigned int32) is the user input number that is currently assigned to the selected channel of the selected preamplifier  )
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("MCVA5.UserInGet", [Preamp_Nr, Channel_Nr], ["H", "H"], ["I"])
+
+    def MCVA5_GainSet(self, Preamp_Nr, Channel_Nr, Gain):
+        """
+        MCVA5.GainSet
+        Sets the gain of one of the four channels of the selected preamplifier.
+        Arguments:
+        - Preamplifier Nr. (unsigned int16) is the preamplifier module number, where valid values are 1, 2, 3, 4
+        - Channel Nr. (unsigned int16) is the channel number out of the four available channels in the MCVA5 preamplifier, where valid values are 1, 2, 3, 4
+        - Gain (unsigned int16) is the gain that will be applied to the selected channel of the selected preamplifier, where 0=1, 1=10, 2=100, 3=1000  
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("MCVA5.GainSet", [Preamp_Nr, Channel_Nr], ["H", "H", "H"], [])
+
+    def MCVA5_GainGet(self, Preamp_Nr, Channel_Nr):
+        """
+        MCVA5.GainGet
+        Returns the gain applied to one of the four channels of the selected preamplifier.
+        Arguments:
+        - Preamplifier Nr. (unsigned int16) is the preamplifier module number, where valid values are 1, 2, 3, 4
+        - Channel Nr. (unsigned int16) is the channel number out of the four available channels in the MCVA5 preamplifier, where valid values are 1, 2, 3, 4
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Gain (unsigned int16) is the gain currently applied to the selected channel of the selected preamplifier, where 0=1, 1=10, 2=100, 3=1000    
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("MCVA5.GainGet", [Preamp_Nr, Channel_Nr], ["H", "H"], ["H"])
+
+    def MCVA5_InputModeSet(self, Preamp_Nr, Channel_Nr, Input_Mode):
+        """
+        MCVA5.InputModeSet
+        Sets the input mode of one of the four channels of the selected preamplifier.
+        Arguments:
+        - Preamplifier Nr. (unsigned int16) is the preamplifier module number, where valid values are 1, 2, 3, 4
+        - Channel Nr. (unsigned int16) is the channel number out of the four available channels in the MCVA5 preamplifier, where valid values are 1, 2, 3, 4
+        - Input mode (unsigned int16) is the input mode that will be applied to the selected channel of the selected preamplifier, where 0=A-B, 1=A, 2=GND
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("MCVA5.InputModeSet", [Preamp_Nr, Channel_Nr], ["H", "H", "H"], [])
+
+    def MCVA5_InputModeGet(self, Preamp_Nr, Channel_Nr):
+        """
+        MCVA5.InputModeGet
+        Returns the input mode applied to one of the four channels of the selected preamplifier.
+        Arguments:
+        - Preamplifier Nr. (unsigned int16) is the preamplifier module number, where valid values are 1, 2, 3, 4
+        - Channel Nr. (unsigned int16) is the channel number out of the four available channels in the MCVA5 preamplifier, where valid values are 1, 2, 3, 4
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Input mode (unsigned int16) is the input mode currently applied to the selected channel of the selected preamplifier, where 0=A-B, 1=A, 2=GND
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("MCVA5.InputModeGet", [Preamp_Nr, Channel_Nr], ["H", "H"], ["H"])
+
+
+    def MCVA5_CouplingSet(self, Preamp_Nr, Channel_Nr, Coupling):
+        """
+        MCVA5.CouplingSet
+        Sets the coupling mode of one of the four channels of the selected preamplifier.
+        Arguments:
+        - Preamplifier Nr. (unsigned int16) is the preamplifier module number, where valid values are 1, 2, 3, 4
+        - Channel Nr. (unsigned int16) is the channel number out of the four available channels in the MCVA5 preamplifier, where valid values are 1, 2, 3, 4
+        - Coupling (unsigned int16) is the coupling mode that will be applied to the selected channel of the selected preamplifier, where 0=DC and 1=AC
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("MCVA5.CouplingSet", [Preamp_Nr, Channel_Nr], ["H", "H", "H"], [])
+
+    def MCVA5_CouplingGet(self, Preamp_Nr, Channel_Nr):
+        """
+        MCVA5.CouplingGet
+        Returns the coupling mode of one of the four channels of the selected preamplifier.
+        Arguments:
+        - Preamplifier Nr. (unsigned int16) is the preamplifier module number, where valid values are 1, 2, 3, 4
+        - Channel Nr. (unsigned int16) is the channel number out of the four available channels in the MCVA5 preamplifier, where valid values are 1, 2, 3, 4
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Coupling (unsigned int16) is the coupling mode that applied to the selected channel of the selected preamplifier, where 0=DC and 1=AC
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("MCVA5.CouplingGet", [Preamp_Nr, Channel_Nr], ["H", "H"], ["H"])
+
+    def MCVA5_SingleStateUpdate(self, Preamp_Nr):
+        """
+        MCVA5.SingleStateUpdate
+        Reads once the state of the selected preamplifier and returns the Ready and Overload states of all channels.
+        Arguments:
+        - Preamplifier Nr. (unsigned int16) is the preamplifier module number, where valid values are 1, 2, 3, 4
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Channel 1 Ready (unsigned int32) where 0=no ready, 1=ready
+        - Channel 1 Overload (unsigned int32) where 0=not overload, 1=overload
+        - Channel 2 Ready (unsigned int32) where 0=no ready, 1=ready
+        - Channel 2 Overload (unsigned int32) where 0=not overload, 1=overload
+        - Channel 3 Ready (unsigned int32) where 0=no ready, 1=ready
+        - Channel 3 Overload (unsigned int32) where 0=not overload, 1=overload
+        - Channel 4 Ready (unsigned int32) where 0=no ready, 1=ready
+        - Channel 4 Overload (unsigned int32) where 0=not overload, 1=overload
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("MCVA5.SingleStateUpdate", [Preamp_Nr], ["H"], ["i", "i", "i", "i", "i", "i", "i", "i"])
+
+    def MCVA5_ContStateUpdateSet(self, Preamp_Nr, Continuous_Read):
+        """
+        MCVA5.ContStateUpdateSet
+        Configures the selected preamplifier to read continuously the state of all channels.
+        Arguments:
+        - Preamplifier Nr. (unsigned int16) is the preamplifier module number, where valid values are 1, 2, 3, 4
+        - Continuous Read (unsigned int32) where 0=false, 1=true
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("MCVA5.ContStateUpdateSet", [Preamp_Nr, Continuous_Read], ["H", "I"], [])
+
+    def MCVA5_ContStateUpdateGet(self, Preamp_Nr):
+        """
+        MCVA5.ContStateUpdateGet
+        Returns if the selected preamplifier is configured to read continuously the state of all channels.
+        Arguments:
+        - Preamplifier Nr. (unsigned int16) is the preamplifier module number, where valid values are 1, 2, 3, 4
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Continuous Read (unsigned int32) where 0=false, 1=true
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("MCVA5.ContStateUpdateGet", [Preamp_Nr], ["H"], ["I"])
+
+    def MCVA5_SingleTempUpdate(self, Preamp_Nr):
+        """
+        MCVA5.SingleTempUpdate
+        Reads once the temperatures of all channels of the selected preamplifier.
+        Arguments:
+        - Preamplifier Nr. (unsigned int16) is the preamplifier module number, where valid values are 1, 2, 3, 4
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Channel 1 (unsigned int16) is the temperature in °C of Channel 1
+        - Channel 2 (unsigned int16) is the temperature in °C of Channel 2
+        - Channel 3 (unsigned int16) is the temperature in °C of Channel 3
+        - Channel 4 (unsigned int16) is the temperature in °C of Channel 4
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("MCVA5.SingleTempUpdate", [Preamp_Nr], ["H"], ["H", "H", "H", "H"])
+
+    def MCVA5_ContTempUpdateSet(self, Preamp_Nr, Continuous_Read):
+        """
+        MCVA5.ContTempUpdateSet
+        Configures the selected preamplifier to read continuously the temperature of all channels.
+        Arguments:
+        - Preamplifier Nr. (unsigned int16) is the preamplifier module number, where valid values are 1, 2, 3, 4
+        - Continuous Read (unsigned int32) where 0=false, 1=true
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("MCVA5.ContTempUpdateSet", [Preamp_Nr, Continuous_Read], ["H", "I"], [])
+
+    def MCVA5_ContTempUpdateGet(self, Preamp_Nr):
+        """
+        MCVA5.ContTempUpdateGet
+        Returns if the selected preamplifier is configured to read continuously the temperature of all channels.
+        Arguments:
+        - Preamplifier Nr. (unsigned int16) is the preamplifier module number, where valid values are 1, 2, 3, 4
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Continuous Read (unsigned int32) where 0=false, 1=true
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("MCVA5.ContTempUpdateGet", [Preamp_Nr], ["H"], ["I"])
+
+    def MProbeBias_Set(self, Scanner_Index, Bias_Value):
+        """
+        MProbeBias.Set
+        Sets the Bias voltage to the specified value.
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        - Bias value (V) (float32)
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("MProbeBias.Set", [Scanner_Index, Bias_Value], ["H", "f"], [])
+
+    def MProbeBias_Get(self, Scanner_Index):
+        """
+        MProbeBias.Get
+        Returns the Bias voltage value.
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Bias value (V) (float32)
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("MProbeBias.Get", [Scanner_Index], ["H"], ["f"])
+
+    def MProbeBias_RangeSet(self, Scanner_Index, Bias_Range_Index):
+        """
+        MProbeBias.RangeSet
+        Sets the range of the Bias voltage, if different ranges are available.
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        - Bias range index (unsigned int16) is the index out of the list of ranges which can be retrieved by the function Bias.RangeGet. 
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("MProbeBias.RangeSet", [Scanner_Index, Bias_Range_Index], ["H", "H"], [])
+
+    def MProbeBias_RangeGet(self, Scanner_Index):
+        """
+        MProbeBias.RangeGet
+        Returns the index of the selected range.
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Bias range index (unsigned int16) is the index out of the list of bias ranges. 
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("MProbeBias.RangeGet", [Scanner_Index], ["H"], ["H"])
+
+    def MProbeBias_CalibrSet(self, Scanner_Index, Calibration, Offset):
+        """
+        MProbeBias.CalibrSet
+        Sets the calibration and offset of bias voltage.
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        - Calibration (float32) 
+        - Offset (float32)
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("MProbeBias.CalibrSet", [Scanner_Index, Calibration, Offset], ["H", "f", "f"], [])
+
+    def MProbeBias_CalibrGet(self, Scanner_Index):
+        """
+        MProbeBias.CalibrGet
+        Gets the calibration and offset of bias voltage.
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Calibration (float32) 
+        - Offset (float32)
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("MProbeBias.CalibrGet", [Scanner_Index], ["H"], ["f", "f"])
+
+    def MProbeBias_Pulse(self, Scanner_Index, Wait_Until_Done, Width, Value, ZCtrl_Hold, Abs_Rel):
+        """
+        MProbeBias.Pulse
+        Generates one bias pulse.
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        - Wait until done (unsigned int32), if True, this function will wait until the pulse has finished. 1=True and 0=False 
+        - Bias pulse width (s) (float32) is the pulse duration in seconds
+        - Bias value (V) (float32) is the bias value applied during the pulse
+        - Z-Controller on hold (unsigned int16) sets whether the controller is set to hold (deactivated) during the pulse. Possible values are: 0=no change, 1=hold, 2=don’t hold
+        - Pulse absolute/relative (unsigned int16) sets whether the bias value argument is an absolute value or relative to the current bias voltage. Possible values are: 0=no change, 1=relative, 2=absolute
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("MProbeBias.Pulse", [Scanner_Index, Wait_Until_Done, Width, Value, ZCtrl_Hold, Abs_Rel], ["H", "I", "f", "f", "H", "H"], [])
+
+    def MProbeCurrent_Get(self, Scanner_Index):
+        """
+        MProbeCurrent.Get
+        Returns the tunneling current value.
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Current value (A) (float32) 
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("MProbeCurrent.Get", [Scanner_Index], ["H"], ["f"])
+
+    def MProbeCurrent_GainSet(self, Scanner_Index, Gain_Index, Filter_Index):
+        """
+        MProbeCurrent.GainSet
+        Sets the gain (and filter, if available) of the current amplifier.
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        - Gain index (int) is the index out of the list of gains which can be retrieved by the function Current.GainsGet. The value -1 means no change.
+        - Filter index (int) is the index out of the list of filters which can be retrieved by the function Current.GainsGet. This is the list of filters available for the Basel PI SP 983c preamplifier. If the preamplifier in use is not this one or we don’t want to change this parameter, -1 should be used.
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("MProbeCurrent.GainSet", [Scanner_Index, Gain_Index, Filter_Index], ["H", "i", "i"], [])
+
+    def MProbeCurrent_GainsGet(self, Scanner_Index):
+        """
+        MProbeCurrent.GainsGet
+        Returns the selectable gains of the current amplifier and the index of the selected one.
+        It also returns the selectable filters of the current amplifier and the index of the selected one, if the preamplifier in use is the Basel PI SP 983c. Otherwise, the list is empty and the filter index is not relevant.
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Gains size (int) is the size in bytes of the Gains array 
+        - Number of gains (int) is the number of elements of the Gains array
+        - Gains (1D array string) returns an array of selectable gains. Each element of the array is preceded by its size in bytes
+        - Gain index (int) is the index out of the list of gains. 
+        - Filters size (int) is the size in bytes of the Filters array
+        - Number of filters (int) is the number of elements of the Filters array
+        - Filters (1D array string) returns an array of selectable filters. Each element of the array is preceded by its size in bytes
+        - Filter index (int) is the index out of the list of filters. 
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("MProbeCurrent.GainsGet", [Scanner_Index], ["H"], ["i", "i", "*+c", "i", "i", "i", "*+c", "i"])
+
+    def MProbeCurrent_CalibrSet(self, Scanner_Index, Gain_Index, Calibration, Offset):
+        """
+        MProbeCurrent.CalibrSet
+        Sets the calibration and offset of the selected gain in the Current module.
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        - Gain index (int) is the gain whose calibration and offset are set by this function. If set to -1, the default gain is the currently selected one in the Current module
+        - Calibration (float64) 
+        - Offset (float64)
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("MProbeCurrent.CalibrSet", [Scanner_Index, Gain_Index, Calibration, Offset], ["H", "i", "d", "d"], [])
+
+    def MProbeCurrent_CalibrGet(self, Scanner_Index, Gain_Index):
+        """
+        MProbeCurrent.CalibrGet
+        Returns the calibration and offset of the selected gain in the Current module.
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        - Gain index (int) is the gain whose calibration and offset are set by this function. If set to -1, the default gain is the currently selected one in the Current module
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Calibration (float64) 
+        - Offset (float64)
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("MProbeCurrent.CalibrGet", [Scanner_Index, Gain_Index], ["H", "i"], ["d", "d"])
+
+    def MProbeZCtrl_ZPosSet(self, Scanner_Index, Z_m):
+        """
+        MProbeZCtrl.ZPosSet
+        Sets the Z position of the tip.
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        - Z position (m) (float32)
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("MProbeZCtrl.ZPosSet", [Scanner_Index, Z_m], ["H", "f"], [])
+
+    def MProbeZCtrl_ZPosGet(self, Scanner_Index):
+        """
+        MProbeZCtrl.ZPosGet
+        Returns the current Z position of the tip.
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Z position (m) (float32)
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("MProbeZCtrl.ZPosGet", [Scanner_Index], ["H"], ["f"])
+
+    def MProbeZCtrl_OnOffSet(self, Scanner_Index, ZCtrl_Status):
+        """
+        MProbeZCtrl.OnOffSet
+        Switches the Z-Controller On or Off.
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        - Z-Controller status (unsigned int32) switches the controller Off (=0) or On (=1)
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("MProbeZCtrl.OnOffSet", [Scanner_Index, ZCtrl_Status], ["H", "I"], [])
+
+    def MProbeZCtrl_OnOffGet(self, Scanner_Index):
+        """
+        MProbeZCtrl.OnOffGet
+        Returns the status of the Z-Controller.
+        This function returns the status from the real-time controller (i.e. not from the Z-Controller module). 
+        This function is useful to make sure that the Z-controller is really off before starting an experiment. Due to the communication delay, switch-off delay... sending the off command with the ZCtrl.OnOffGet function might take some time before the controller is off.
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Z-Controller status (unsigned int32) indicates if the controller is Off (=0) or On (=1)
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("MProbeZCtrl.OnOffGet", [Scanner_Index], ["H"], ["I"])
+
+    def MProbeZCtrl_SetpntSet(self, Scanner_Index, ZCtrl_Setpoint):
+        """
+        MProbeZCtrl.SetpntSet
+        Sets the setpoint of the Z-Controller.
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        - Z-Controller setpoint (float32)
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("MProbeZCtrl.SetpntSet", [Scanner_Index, ZCtrl_Setpoint], ["H", "f"], [])
+
+    def MProbeZCtrl_SetpntGet(self, Scanner_Index):
+        """
+        MProbeZCtrl.SetpntGet
+        Returns the setpoint of the Z-Controller.
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Z-Controller setpoint (float32)
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("MProbeZCtrl.SetpntGet", [Scanner_Index], ["H"], ["f"])
+
+    def MProbeZCtrl_GainSet(self, Scanner_Index, P_Gain, I_Gain):
+        """
+        MProbeZCtrl.GainSet
+        Sets the Z-Controller gains (P, I).
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        - P-gain (float32) is the proportional gain of the regulation loop
+        - I-gain (float32) is the integral gain of the regulation loop (I=P/T)
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("MProbeZCtrl.GainSet", [Scanner_Index, P_Gain, I_Gain], ["H", "f", "f"], [])
+
+    def MProbeZCtrl_GainGet(self, Scanner_Index):
+        """
+        MProbeZCtrl.GainGet
+        Returns the Z-Controller gains (P, I).
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - P-gain (float32) is the proportional gain of the regulation loop
+        - I-gain (float32) is the integral gain of the regulation loop (I=P/T)
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("MProbeZCtrl.GainGet", [Scanner_Index], ["H"], ["f", "f"])
+
+    def MProbeZCtrl_Home(self, Scanner_Index):
+        """
+        MProbeZCtrl.Home
+        Moves the tip to its home position.
+        This function moves the tip to the home position defined by the Home Absolute (m)/ Home Relative (m) value.
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("MProbeZCtrl.Home", [Scanner_Index], ["H"], [])
+
+    def MProbeZCtrl_HomePropsSet(self, Scanner_Index, Abs_Rel, Home_m):
+        """
+        MProbeZCtrl.HomePropsSet
+        Sets the current status of the Z-Controller Home switch and its corresponding position.
+        The Home position can be absolute (fixed position) or relative to the current tip position.
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        - Relative or Absolute (unsigned int16), where 0 means no change with respect to the current selection, 1 means  that the home position is absolute to the current position, and 2 means that it is relative to the current position
+        - Home position (m) (float32) is the home position value in meters
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("MProbeZCtrl.HomePropsSet", [Scanner_Index, Abs_Rel, Home_m], ["H", "H", "f"], [])
+
+    def MProbeZCtrl_HomePropsGet(self, Scanner_Index):
+        """
+        MProbeZCtrl.HomePropsGet
+        Returns the current status of the Z-Controller Home switch and its corresponding position.
+        The Home position can be absolute (fixed position) or relative to the current tip position.
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Relative or Absolute (unsigned int16), where 0 means that the home position is absolute to the current position, and 1 means that it is relative to the current position
+        - Home position (m) (float32) is the home position value in meters
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("MProbeZCtrl.HomePropsGet", [Scanner_Index], ["H"], ["H", "f"])
+
+    def MProbeZCtrl_Withdraw(self, Scanner_Index):
+        """
+        MProbeZCtrl.Withdraw
+        Withdraws the tip.
+        This function switches off the Z-Controller and then fully withdraws the tip (to the upper limit of the Z-piezo range).
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("MProbeZCtrl.Withdraw", [Scanner_Index], ["H"], [])
+
+    def MProbeZCtrl_LimitsSet(self, Scanner_Index, High_Limit, Low_Limit):
+        """
+        MProbeZCtrl.LimitsSet
+        Sets the Z position high and low limits in meters.
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        - Z high limit (m) (float32)
+        - Z low limit (m) (float32) 
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("MProbeZCtrl.LimitsSet", [Scanner_Index, High_Limit, Low_Limit], ["H", "f", "f"], [])
+
+    def MProbeZCtrl_LimitsGet(self, Scanner_Index):
+        """
+        MProbeZCtrl.LimitsGet
+        Returns the Z position high and low limits in meters.
+        Arguments:
+        - Scanner index (unsigned int16) is the index of the scanner to control. Valid values are 1 (=standard Bias module), 2, 3, and 4.
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Z high limit (m) (float32)
+        - Z low limit (m) (float32) 
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("MProbeZCtrl.LimitsGet", [Scanner_Index], ["H"], ["f", "f"])
+
+    def MProbeScanner_XYPosGet(self, Scanner_Index):
+        """
+        MProbeScanner.XYPosGet
+        Returns the XY positions of the selected scanner.
+        Arguments:
+        - Scanner index (int) is the index of the scanner to control. Valid values are 1 to 4.
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - X (m) (float32)
+        - Y (m) (float32)
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("MProbeScanner.XYPosGet", [Scanner_Index], ["i"], ["f", "f"])
+
+    def MProbeScanner_XYPosSet(self, Scanner_Index, X_m, Y_m):
+        """
+        MProbeScanner.XYPosSet
+        Moves the tip of the selected scanner.
+        Arguments:
+        - Scanner index (int) is the index of the scanner to control. Valid values are 1 to 4.
+        - X (m) (float32)
+        - Y (m) (float32)
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("MProbeScanner.XYPosSet", [Scanner_Index, High_Limit, Low_Limit], ["i", "f", "f"], [])
+
+    def MProbeScanner_Stop(self, Scanner_Index):
+        """
+        MProbeScanner.Stop
+        Stops the tip movement of the selected scanner.
+        Arguments:
+        - Scanner index (int) is the index of the scanner to control. Valid values are 1 to 4.
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("MProbeScanner.Stop", [Scanner_Index], ["i"], [])
+
+    def MProbeScanner_SpeedGet(self, Scanner_Index):
+        """
+        MProbeScanner.SpeedGet
+        Returns the speed at which the tip of the selected scanner moves in the Follow Me mode.
+        Arguments:
+        - Scanner index (int) is the index of the scanner to control. Valid values are 1 to 4.
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Speed (m/s) (float32)
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("MProbeScanner.SpeedGet", [Scanner_Index], ["i"], ["f"])
+
+    def MProbeScanner_SpeedSet(self, Scanner_Index, Speed):
+        """
+        MProbeScanner.SpeedSet
+        Sets the speed at which the tip of the selected scanner moves in the Follow Me mode.
+        Arguments:
+        - Scanner index (int) is the index of the scanner to control. Valid values are 1 to 4.
+        - Speed (m/s) (float32)
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("MProbeScanner.SpeedSet", [Scanner_Index, Speed], ["i", "f"], [])
+
+    def MProbeScanner_ActiveScannerGet(self):
+        """
+        MProbeScanner.ActiveScannerGet
+        Returns the active scanner.
+        Arguments:
+        None
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Scanner index (int) is the index of the active scanner. Valid values are 1 to 4.
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("MProbeScanner.ActiveScannerGet", [], [], ["i"])
+
+    def MProbeScanner_ScannerSwitch(self, Scanner_Index):
+        """
+        MProbeScanner.ScannerSwitch
+        Switches the active scanner to the selected one.
+        Arguments:
+        - Scanner index (int) is the index of the scanner to switch to. Valid values are 1 to 4.
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("MProbeScanner.ScannerSwitch", [Scanner_Index], ["i"], [])
+
+    def MProbeScanner_CalibrSet(self, Scanner_Index, Factor_X, Factor_Y, Factor_Z):
+        """
+        MProbeScanner.CalibrSet
+        Sets the piezo factor values for all three axes (X, Y, Z) of the selected scanner. Changing the factor will also change the range.
+        Arguments:
+        - Scanner index (int) is the index of the scanner to control. Valid values are 1 to 4.
+        - Factor X (m/V) (float32) 
+        - Factor Y (m/V) (float32) 
+        - Factor Z (m/V) (float32) 
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("MProbeScanner.CalibrSet", [Scanner_Index, Factor_X, Factor_Y, Factor_Z], ["i", "f", "f", "f"], [])
+
+    def MProbeScanner_CalibrGet(self, Scanner_Index):
+        """
+        MProbeScanner.CalibrGet
+        Returns the piezo factor values and ranges for all three axes (X, Y, Z) of the selected scanner.
+        Arguments:
+        - Scanner index (int) is the index of the scanner to control. Valid values are 1 to 4.
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Factor X (m/V) (float32) 
+        - Factor Y (m/V) (float32) 
+        - Factor Z (m/V) (float32) 
+        - Range X (m) (float32) 
+        - Range Y (m) (float32) 
+        - Range Z (m) (float32) 
+        - Error described in the Response message>Body section
+        """
+        return self.quickSend("MProbeScanner.CalibrGet", [Scanner_Index], ["i"], ["f", "f", "f", "f", "f", "f"])
 
 """
 """
