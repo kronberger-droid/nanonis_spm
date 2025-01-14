@@ -54,4 +54,8 @@ We hereby ensure that the arguments are of the correct size.
 
 ### 1.0.3
 Added the function Util.VersionGet to get the software version, the MCVA5 preamplifier functions, the V5e Generic PI Controller functions, and all the MultiProbe functions (Bias, Current, Z-Controller, and scanner control) needed in a MultiProbe system. 
+### 1.0.4
+Fixed the indentation of two Script functions (Script.Open and Script.LUTOpen) which triggered an error when trying to use the class.
+Changed the behavior of the returnDebugInfo function so that nothing is printed out if there is no error.
+
 
