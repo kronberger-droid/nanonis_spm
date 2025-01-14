@@ -175,7 +175,8 @@ class Nanonis:
             print(Recv_Header)
             print(Recv_Body)
         if Recv_Command == Command:
-            print('Correct Command.')
+            if (self.displayInfo == 1):
+                print('Correct Command.')
             return Recv_Body
         else:
             print('Wrong Command')
@@ -312,7 +313,8 @@ class Nanonis:
             print('The following error appeared:', "\n", ErrorString)
             return [ErrorString, Response, Variables]
         else:
-            print('No error messages. Error status was: 0')
+            if (self.displayInfo == 1):
+                print('No error messages. Error status was: 0')
             return [ErrorString, Response, Variables]
 
     def quickSend(self, Command, Body, BodyType, ResponseTypes):
@@ -7127,16 +7129,16 @@ class Nanonis:
         return self.quickSend("OCSync.LinkAnglesGet", [], [], ["I", "I"])
 
     def Script_Open(self):
-    """
-    Script.Open
-    Opens the Script module.
-    Arguments: None
-    
-    Return arguments (if Send response back flag is set to True when sending request message):
-    - Error described in the Response message>Body section
-    
-    
-    """
+        """
+        Script.Open
+        Opens the Script module.
+        Arguments: None
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Error described in the Response message>Body section
+        
+        
+        """
         return self.quickSend("Script.Open", [], [], [])
 
     def Script_Load(self, Script_index, Script_file_path, Load_session):
@@ -7318,16 +7320,16 @@ class Nanonis:
                               ["H", "i", "I", "+*c", "+*c"], [])
 
     def Script_LUTOpen(self):
-    """
-    Script.LUTOpen
-    Opens the LUT (Look Up Table) Editor from the Script module.
-    Arguments: None
-    
-    Return arguments (if Send response back flag is set to True when sending request message):
-    - Error described in the Response message>Body section
-    
-    
-    """
+        """
+        Script.LUTOpen
+        Opens the LUT (Look Up Table) Editor from the Script module.
+        Arguments: None
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        - Error described in the Response message>Body section
+        
+        
+        """
         return self.quickSend("Script.LUTOpen", [], [], [])
 
     def Script_LUTLoad(self, Script_index, Script_file_path, LUT_Values):
