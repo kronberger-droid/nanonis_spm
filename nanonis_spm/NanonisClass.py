@@ -237,10 +237,11 @@ class Nanonis:
         return decoded_nums
 
     def parseError(self, response, index):
-        if(index == 8):
-            margin = 4
-        else:
-            margin = 8
+        #if(index == 8):
+            #margin = 4
+        #else:
+            #margin = 8
+        margin = 8  #4 bytes (error status) + 4 bytes (error description size)
         errorIndex = index + margin
         jumpDistance = len(response) - errorIndex
         errorString = response[errorIndex:(errorIndex + jumpDistance)].decode()
@@ -290,7 +291,10 @@ class Nanonis:
                     universalLength = Variables[0]
                     if ResponseType[2] == 'c':
                         Result = self.decodeStringPrepended(Response, counter, universalLength)
-                        counter = counter + universalLength
+                        #counter = counter + universalLength 
+                        if len(Result)!=0:
+                            for item in Result:
+                                counter=counter+4+len(item)
                     else:
                         Result = self.decodeArray(Response, counter, universalLength, ResponseType[2])  # Nano
                         # print(ResponseType, ' : ', Result)
@@ -304,12 +308,12 @@ class Nanonis:
                         increment = 4
                     if (Variables[-1] != 0): #here lies the problem
                         counter = counter + (Variables[-1] * increment)
-                    else:
-                        counter = counter + increment
+                    #else:
+                        #counter = counter + increment
                     Variables.append(Result)
                     # print(ResponseType, '  : ', Result)
         ErrorString = self.parseError(Response, counter)#Response[12:(12 + ErrorLength)].decode()
-        if(ErrorString != ''):
+        if(len(ErrorString) != 0):
             print('The following error appeared:', "\n", ErrorString)
             return [ErrorString, Response, Variables]
         else:
@@ -661,11 +665,12 @@ class Nanonis:
         -- Channel indexes (1D array int) are the indexes of recorded channels. The indexes are comprised between 0 and 23 for the 24 signals assigned in the Signals Manager.
         To get the signal name and its corresponding index in the list of the 128 available signals in the Nanonis Controller, use the <i>Signals.InSlotsGet</i> function
         - Channels size (int) is the size in bytes of the Channels string array
+        - Number of channels (int) is the number of elements of the Channels string array
         - Channels (1D array string) returns the names of the acquired channels in the sweep. The size of each string item comes right before it as integer 32
         -- Error described in the Response message&gt;Body section
         
         """
-        return self.quickSend("BiasSpectr.ChsGet", [], [], ["i", "*i", "i", "**c"])
+        return self.quickSend("BiasSpectr.ChsGet", [], [], ["i", "*i", "i", "i", "*+c"])
 
     def BiasSpectr_PropsSet(self, Save_all: np.uint16, Number_of_sweeps: int, Backward_sweep: np.uint16,
                             Number_of_points: int, Z_offset_m: np.float32, Autosave: np.uint16,
@@ -2125,11 +2130,12 @@ class Nanonis:
         -- Channel indexes (1D array int) are the indexes of recorded channels. The indexes are comprised between 0 and 23 for the 24 signals assigned in the Signals Manager.
         To get the signal name and its corresponding index in the list of the 128 available signals in the Nanonis Controller, use the <i>Signals.InSlotsGet</i> function
         - Channels size (int) is the size in bytes of the Channels string array
+        - Number of channels (int) is the number of elements of the Channels string array
         - Channels (1D array string) returns the naames of the acquired channels in the sweep. The size of each string item comes right before it as integer 32
         -- Error described in the Response message&gt;Body section
         
         """
-        return self.quickSend("ZSpectr.ChsGet", [], [], ["i", "*i", "i", "**c"])
+        return self.quickSend("ZSpectr.ChsGet", [], [], ["i", "*i", "i", "i", "*+c"])
 
     def ZSpectr_PropsSet(self, Backward_sweep, Number_of_points, Number_of_sweeps, Autosave, Show_save_dialog,
                          Save_all):
@@ -2862,10 +2868,20 @@ class Nanonis:
         -- Series name (string) is base name used for the saved images
         -- Comment size (int) is the size in bytes of the Comment string
         -- Comment (string) is comment saved in the file
+        -- Modules names size (int) is the size in bytes of the modules names array. These are the modules whose parameters are going to be saved in the header of the image files
+        -- Modules names number (int) is the number of elements of the modules names array
+        -- Modules names (1D array string) is an array of modules names strings, where each string comes prepended by its size in bytes
+        -- Size of Number of Parameters per Module array (int) is the number of elements in the Number of Parameters per Module array. It should be the same as Modules names number.
+        -- Number of Parameters per Module array (1D array int) is an array containing the number of parameters per module
+        -- Parameters rows (int) defines the number of rows of the Parameters array 
+        -- Parameters columns (int) defines the number of columns of the Parameters array 
+        -- Parameters (2D array string) returns the parameters that are going to be saved in the header of the image files. The size of each string item comes right before it as integer 32.
+           Each row of parameters belongs to a different module.
+
         -- Error described in the Response message&gt;Body section
         
         """
-        return self.quickSend("Scan.PropsGet", [], [], ["I", "I", "I", "i", "*-c", "i", "*-c"])
+        return self.quickSend("Scan.PropsGet", [], [], ["I", "I", "I", "i", "*-c", "i", "*-c", "i", "i", "*+c", "i", "*+i", "i", "i", "*+c"])
 
     def Scan_SpeedSet(self, Forward_linear_speed_m_s, Backward_linear_speed_m_s, Forward_time_per_line_s,
                       Backward_time_per_line_s, Keep_parameter_constant, Speed_ratio):
@@ -3893,11 +3909,15 @@ class Nanonis:
         """
         return self.quickSend("Motor.StopMove", [], [], [])
 
-    def Motor_PosGet(self):
+    def Motor_PosGet(self, Group, Timeout):
         """
         Motor.PosGet
         Returns the positions of the motor control module.
-        Arguments: None
+        Arguments:
+        -- Group (unsigned int32) is the selection of the groups defined in the motor control module. If the motor doesn’t support the selection of groups, set it to 0. 
+        Valid values are 0=Group 1, 1=Group 2, 2=Group 3, 3=Group 4, 4=Group 5, 5=Group 6
+        -- Timeout (unsigned int32) is how long to wait in milliseconds to get the positions. If the specified timeout is reached, the function returns. It is recommendable to set this value to 500 (ms)
+
         Return arguments (if Send response back flag is set to True when sending request message):
         
         -- X(m) (float64) is the X position in meters
@@ -3907,7 +3927,7 @@ class Nanonis:
         
         
         """
-        return self.quickSend("Motor.PosGet", [], [], ["d", "d", "d"])
+        return self.quickSend("Motor.PosGet", [Group, Timeout], ["I", "I"], ["d", "d", "d"])
 
     def Motor_StepCounterGet(self, Reset_X, Reset_Y, Reset_Z):
         """
@@ -3932,12 +3952,13 @@ class Nanonis:
         """
         return self.quickSend("Motor.StepCounterGet", [Reset_X, Reset_Y, Reset_Z], ["I", "I", "I"], ["i", "i", "i"])
 
-    def Motor_FreqAmpGet(self):
+    def Motor_FreqAmpGet(self, Axis):
         """
         Motor.FreqAmpGet
         Returns the frequency (Hz) and amplitude (V) of the motor control module.
         This function is only available for PD5, PMD4, and Attocube ANC150 devices.
-        Arguments: None
+        Arguments:
+        -- Axis (unsigned int16) defines which axis these parameters will be applied to. 0 means Default, 1 means X, 2 means Y, 3 means Z
         Return arguments (if Send response back flag is set to True when sending request message):
         
         -- Frequency (Hz) (float32) 
@@ -3946,7 +3967,7 @@ class Nanonis:
         
         
         """
-        return self.quickSend("Motor.FreqAmpGet", [], [], ["f", "f"])
+        return self.quickSend("Motor.FreqAmpGet", [Axis], ["H"], ["f", "f"])
 
     def Motor_FreqAmpSet(self, Frequency_Hz, Amplitude_V, Axis):
         """
@@ -9619,14 +9640,7 @@ class Nanonis:
         """
         return self.quickSend("SpectrumAnlzr.Run", [Spectrum_Analyzer_instance], ["i"], [])
 
-    def SpectrumAnlzr_DataGet(self, Spectrum_Analyzer_instance, Periods, Amplitude_Percent, Frequency_Hz, Polarity,
-                              Direction, Idle_value, Periods_again, Device, Idle_value_again, Device_again,
-                              Channel_index, Status, Channel_index_again, Channel_index_again_again, Signal_index,
-                              Channel_index_again_again_again, Channel_index_again_again_again_again,
-                              Amplitude_Percent_again, Time_s, Polarity_again, Direction_again, AdddivZero,
-                              Channel_index_again_again_again_again_again,
-                              Channel_index_again_again_again_again_again_again, Shape,
-                              Channel_index_again_again_again_again_again_again_again):
+    def SpectrumAnlzr_DataGet(self, Spectrum_Analyzer_instance):
         """
         SpectrumAnlzr.DataGet
         Returns the data from the Spectrum Analyzer modules.
@@ -9640,18 +9654,24 @@ class Nanonis:
         -- Data Y size (int) is the number of data points in Data Y
         -- Data Y (1D array float64) is the data acquired in the Spectrum Analyzer
         -- Error described in the Response message&gt;Body section
-        
-        Function Generator 1-Channel
+        """
+        return self.quickSend("SpectrumAnlzr.DataGet", [Spectrum_Analyzer_instance], ["i"], ["f", "f", "i", "*f"])
+
+    def FunGen1Ch_Start(self, Periods, Wait_until_finished):
+        """
         FunGen1Ch.Start
         Starts the generation of the waveform on AO8 (SC4) or FAST AO (SC5) through the Function Generator module.
         Arguments: 
         -- Periods (int) is the number of periods to generate. Set -2 for continuous movement until Stop executes
-        
+        -- Wait until finished (unsigned int32) defines if this function waits for the generation to finish (=1) or not (=0)
         Return arguments (if Send response back flag is set to True when sending request message):
         
         -- Error described in the Response message&gt;Body section
-        
-        
+        """
+        return self.quickSend("FunGen1Ch.Start", [Periods, Wait_until_finished], ["i", "I"], [])
+
+    def FunGen1Ch_Stop(self):
+        """
         FunGen1Ch.Stop
         Stops the generation of the waveform through the Function Generator module.
         Arguments: None
@@ -9659,6 +9679,11 @@ class Nanonis:
         
         -- Error described in the Response message&gt;Body section
         
+        """
+        return self.quickSend("FunGen1Ch.Stop", [], [], [])
+
+    def FunGen1Ch_StatusGet(self):
+        """
         
         FunGen1Ch.StatusGet
         Gets the status of the waveform generation on AO8 (SC4) or FAST AO (SC5) through the Function Generator module.
@@ -9669,7 +9694,11 @@ class Nanonis:
         -- Periods left (int) is the number of periods left to generate
         -- Error described in the Response message&gt;Body section
         
-        
+        """
+        return self.quickSend("FunGen1Ch.StatusGet", [], [], ["I", "i"])
+
+    def FunGen1Ch_PropsSet(self, Amplitude, Frequency, Polarity, Direction):
+        """
         
         FunGen1Ch.PropsSet
         Sets the amplitude, frequency, polarity, and direction of the waveform generated on AO8 (SC4) or FAST AO (SC5) through the Function Generator module.
@@ -9683,6 +9712,11 @@ class Nanonis:
         
         -- Error described in the Response message&gt;Body section
         
+        """
+        return self.quickSend("FunGen1Ch.PropsSet", [Amplitude, Frequency, Polarity, Direction], ["f", "f", "H", "H"], [])
+
+    def FunGen1Ch_PropsGet(self):
+        """
         
         FunGen1Ch.PropsGet
         Returns the amplitude, frequency, polarity, and direction of the waveform generated on AO8 (SC4) or FAST AO (SC5) through the Function Generator module.
@@ -9695,6 +9729,11 @@ class Nanonis:
         -- Direction (unsigned int16) is the forward (_0) or backward (_1) direction of the generated waveform
         -- Error described in the Response message&gt;Body section
         
+        """
+        return self.quickSend("FunGen1Ch.PropsGet", [], [], ["f", "f", "H", "H"])
+
+    def FunGen1Ch_IdleSet(self, Idle_value):
+        """
         
         FunGen1Ch.IdleSet
         Sets the idle value in the Function Generator module.
@@ -9705,6 +9744,11 @@ class Nanonis:
         Return arguments (if Send response back flag is set to True when sending request message):
         
         -- Error described in the Response message&gt;Body section
+        """
+        return self.quickSend("FunGen1Ch.IdleSet", [Idle_value], ["f"], [])
+
+    def FunGen1Ch_IdleGet(self):
+        """
         FunGen1Ch.IdleGet
         Returns the idle value in the Function Generator module.
         The idle value is the value of AO8 (SC4) or FAST AO (SC5) when the function generator is not running.
@@ -9714,15 +9758,25 @@ class Nanonis:
         -- Idle value (float32)
         -- Error described in the Response message&gt;Body section
         
-        Function Generator 2-Channels
+        """
+        return self.quickSend("FunGen1Ch.IdleGet", [], [], ["f"])
+
+    def FunGen2Ch_Start(self, Periods, Wait_until_finished):
+        """
         FunGen2Ch.Start
         Starts the generation of the waveforms on the FAST AO or any available analog output through the Function Generator 2-Channels module.
         Arguments: 
         -- Periods (int) is the number of periods to generate. Set -2 for continuous movement until Stop executes
+        -- Wait until finished (unsigned int32) defines if this function waits for the generation to finish (=1) or not (=0)
         
         Return arguments (if Send response back flag is set to True when sending request message):
         
         -- Error described in the Response message&gt;Body section
+        """
+        return self.quickSend("FunGen2Ch.Start", [Periods, Wait_until_finished], ["i", "I"], [])
+
+    def FunGen2Ch_Stop(self):
+        """
         
         
         FunGen2Ch.Stop
@@ -9732,6 +9786,11 @@ class Nanonis:
         
         -- Error described in the Response message&gt;Body section
         
+        """
+        return self.quickSend("FunGen2Ch.Stop", [], [], [])
+
+    def FunGen2Ch_StatusGet(self):
+        """
         
         FunGen2Ch.StatusGet
         Returns the status of the waveforms generation in the Function Generator 2-Channels module.
@@ -9742,6 +9801,11 @@ class Nanonis:
         -- Periods left (int) is the number of periods left to generate
         -- Error described in the Response message&gt;Body section
         
+        """
+        return self.quickSend("FunGen2Ch.StatusGet", [], [], ["I", "i"])
+
+    def FunGen2Ch_IdleSet(self, Device, Idle_value):
+        """
         FunGen2Ch.IdleSet
         Sets the idle value in the Function Generator 2-Channels module.
         The idle value is the value of the FAST AO (for the selected SC5) when the function generator is not running.
@@ -9752,6 +9816,11 @@ class Nanonis:
         Return arguments (if Send response back flag is set to True when sending request message):
         
         -- Error described in the Response message&gt;Body section
+        """
+        return self.quickSend("FunGen2Ch.IdleSet", [Device, Idle_value], ["i", "f"], [])
+
+    def FunGen2Ch_IdleGet(self, Device):
+        """
         
         
         FunGen2Ch.IdleGet
@@ -9765,6 +9834,11 @@ class Nanonis:
         -- Idle value (float32)
         -- Error described in the Response message&gt;Body section
         
+        """
+        return self.quickSend("FunGen2Ch.IdleGet", [Device], ["i"], ["f"])
+
+    def FunGen2Ch_OnOffSet(self, Channel_index, Status):
+        """
         
         FunGen2Ch.OnOffSet
         Sets the status of the On/Off switch of the selected channel  in the Function Generator 2-Channels module.
@@ -9775,6 +9849,11 @@ class Nanonis:
         Return arguments (if Send response back flag is set to True when sending request message):
         
         -- Error described in the Response message&gt;Body section
+        """
+        return self.quickSend("FunGen2Ch.OnOffSet", [Channel_index, Status], ["i", "I"], [])
+
+    def FunGen2Ch_OnOffGet(self, Channel_index):
+        """
         
         FunGen2Ch.OnOffGet
         Returns the status of the On/Off switch of Channel 1 in the Function Generator 2-Channels module.
@@ -9786,6 +9865,11 @@ class Nanonis:
         -- Status (unsigned int32) returns whether the channel is Off (_0) or On(_1)
         -- Error described in the Response message&gt;Body section
         
+        """
+        return self.quickSend("FunGen2Ch.OnOffGet", [Channel_index], ["i"], ["I"])
+
+    def FunGen2Ch_SignalSet(self, Channel_index, Signal_index):
+        """
         
         FunGen2Ch.SignalSet
         Sets the signal assigned to the selected channel in the Function Generator 2-Channels module.
@@ -9796,6 +9880,11 @@ class Nanonis:
         Return arguments (if Send response back flag is set to True when sending request message):
         
         -- Error described in the Response message&gt;Body section
+        """
+        return self.quickSend("FunGen2Ch.SignalSet", [Channel_index, Signal_index], ["i", "i"], [])
+
+    def FunGen2Ch_SignalGet(self, Channel_index):
+        """
         
         
         FunGen2Ch.SignalGet
@@ -9808,7 +9897,11 @@ class Nanonis:
         -- Signal index (int) where the values are: 0 for the Fast AO, 1 for AO1, 2 for AO2, 3 for AO3 and so on
         -- Error described in the Response message&gt;Body section
         
-        
+        """
+        return self.quickSend("FunGen2Ch.SignalGet", [Channel_index], ["i"], ["i"])
+
+    def FunGen2Ch_PropsSet(self, Channel_index, Amplitude, Time, Polarity, Direction, Add_Zero):
+        """
         
         FunGen2Ch.PropsSet
         Sets the amplitude, time, polarity, direction, and state of the Add/Zero switch of the waveform generated on the selected channel in the Function Generator 2-Channels module.
@@ -9827,6 +9920,11 @@ class Nanonis:
         Return arguments (if Send response back flag is set to True when sending request message):
         
         -- Error described in the Response message&gt;Body section
+        """
+        return self.quickSend("FunGen2Ch.PropsSet", [Channel_index, Amplitude, Time, Polarity, Direction, Add_Zero], ["i", "f", "f", "H", "H", "H"], [])
+
+    def FunGen2Ch_PropsGet(self, Channel_index):
+        """
         
         
         FunGen2Ch.PropsGet
@@ -9846,6 +9944,11 @@ class Nanonis:
         -- Add/Zero (unsigned int16) means that when Zero (_0), the waveform is generated on Channel 1 around zero. When Add (_1), adds the waveform to the current Idle/DC value
         -- Error described in the Response message&gt;Body section
         
+        """
+        return self.quickSend("FunGen2Ch.PropsGet", [Channel_index], ["i"], ["f", "f", "H", "H", "H"])
+
+    def FunGen2Ch_WaveformSet(self, Channel_index, Shape):
+        """
         FunGen2Ch.WaveformSet
         Sets the shape of the waveform to generate on the selected channel in the Function Generator 2-Channels module.
         Possible values for the shape are: 0_linear bipolar, 1_linear unipolar, 2_quadratic bipolar, 3_quadratic unipolar, 4_triangle bipolar, 5_triangle unipolar, 6_square bipolar, 7_square unipolar, 8_sine bipolar, 9_sine unipolar
@@ -9857,6 +9960,11 @@ class Nanonis:
         
         -- Error described in the Response message&gt;Body section
         
+        """
+        return self.quickSend("FunGen2Ch.WaveformSet", [Channel_index, Shape], ["i", "H"], [])
+
+    def FunGen2Ch_WaveformGet(self, Channel_index):
+        """
         
         FunGen2Ch.WaveformGet
         Returns the shape of the waveform generated on the selected channel in the Function Generator 2-Channels module.
@@ -9869,20 +9977,11 @@ class Nanonis:
         -- Shape (unsigned int16)
         -- Error described in the Response message&gt;Body section
         
-        
-        
+        """
+        return self.quickSend("FunGen2Ch.WaveformGet", [Channel_index], ["i"], ["H"])
+        """
         Utilities
         """
-        return self.quickSend("SpectrumAnlzr.DataGet",
-                              [Spectrum_Analyzer_instance, Periods, Amplitude_Percent, Frequency_Hz, Polarity,
-                               Direction, Idle_value, Periods, Device, Idle_value, Device, Channel_index, Status,
-                               Channel_index, Channel_index, Signal_index, Channel_index, Channel_index,
-                               Amplitude_Percent, Time_s, Polarity, Direction, AdddivZero, Channel_index, Channel_index,
-                               Shape, Channel_index],
-                              ["i", "i", "f", "f", "H", "H", "f", "i", "i", "f", "i", "i", "I", "i", "i", "i", "i", "i",
-                               "f", "f", "H", "H", "H", "i", "i", "H", "i"],
-                              ["d", "d", "i", "*d", "I", "i", "f", "f", "H", "H", "f", "I", "i", "f", "I", "i", "f",
-                               "f", "H", "H", "H", "H"])
 
     def Util_SessionPathGet(self):
         """
@@ -10522,7 +10621,7 @@ class Nanonis:
         -- Error described in the Response message&gt;Body section
         
         """
-        return self.quickSend("MCVA5.UserInSet", [Preamp_Nr, Channel_Nr], ["H", "H", "I"], [])
+        return self.quickSend("MCVA5.UserInSet", [Preamp_Nr, Channel_Nr, User_Input], ["H", "H", "I"], [])
 
     def MCVA5_UserInGet(self, Preamp_Nr, Channel_Nr):
         """
@@ -10551,7 +10650,7 @@ class Nanonis:
         -- Error described in the Response message&gt;Body section
         
         """
-        return self.quickSend("MCVA5.GainSet", [Preamp_Nr, Channel_Nr], ["H", "H", "H"], [])
+        return self.quickSend("MCVA5.GainSet", [Preamp_Nr, Channel_Nr, Gain], ["H", "H", "H"], [])
 
     def MCVA5_GainGet(self, Preamp_Nr, Channel_Nr):
         """
@@ -10580,7 +10679,7 @@ class Nanonis:
         -- Error described in the Response message&gt;Body section
         
         """
-        return self.quickSend("MCVA5.InputModeSet", [Preamp_Nr, Channel_Nr], ["H", "H", "H"], [])
+        return self.quickSend("MCVA5.InputModeSet", [Preamp_Nr, Channel_Nr, Input_Mode], ["H", "H", "H"], [])
 
     def MCVA5_InputModeGet(self, Preamp_Nr, Channel_Nr):
         """
@@ -10610,7 +10709,7 @@ class Nanonis:
         -- Error described in the Response message&gt;Body section
         
         """
-        return self.quickSend("MCVA5.CouplingSet", [Preamp_Nr, Channel_Nr], ["H", "H", "H"], [])
+        return self.quickSend("MCVA5.CouplingSet", [Preamp_Nr, Channel_Nr, Coupling], ["H", "H", "H"], [])
 
     def MCVA5_CouplingGet(self, Preamp_Nr, Channel_Nr):
         """
@@ -11117,7 +11216,7 @@ class Nanonis:
         -- Error described in the Response message&gt;Body section
         
         """
-        return self.quickSend("MProbeScanner.XYPosSet", [Scanner_Index, High_Limit, Low_Limit], ["i", "f", "f"], [])
+        return self.quickSend("MProbeScanner.XYPosSet", [Scanner_Index, X_m, Y_m], ["i", "f", "f"], [])
 
     def MProbeScanner_Stop(self, Scanner_Index):
         """
