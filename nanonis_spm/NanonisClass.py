@@ -575,6 +575,20 @@ class Nanonis:
         """
         return self.quickSend("BiasSwp.LimitsSet", [Lower_limit, Upper_limit], ["f", "f"], [])
 
+    def BiasSwp_LimitsGet(self):
+        """
+        BiasSwp.LimitsGet
+        Returns the Bias Sweep limits.
+        Arguments: None
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -- Lower limit (float32) is the lower limit of the sweep range
+        -- Upper limit (float32) is the upper limit of the sweep range
+        -- Error described in the Response message&gt;Body section
+        
+        """
+        return self.quickSend("BiasSwp.LimitsGet", [], [], ["f", "f"])
+
     def BiasSpectr_Open(self):
         """
         BiasSpectr.Open
@@ -2699,6 +2713,136 @@ class Nanonis:
         """
         return self.quickSend("Piezo.HVAStatusLEDGet", [], [], ["I", "I", "I", "I"])
 
+    def Piezo_XYZLimitsSet(self, Enable_limits, Limit_X_low_V, Limit_X_high_V, Limit_Y_low_V, Limit_Y_high_V, Limit_Z_low_V, Limit_Z_high_V):
+        """
+        Piezo.XYZLimitsSet
+        Sets the XYZ voltage limits from the Piezo Calibration module.
+        Arguments: 
+        -	Enable limits (unsigned int16) activates or deactivates the voltage limits, 0=no change, 1=On, 2=Off
+        -	Voltage limit X Low (V) (float32) 
+        -	Voltage limit X High (V) (float32) 
+        -	Voltage limit Y Low (V) (float32) 
+        -	Voltage limit Y High (V) (float32)
+        -	Voltage limit Z Low (V) (float32) 
+        -	Voltage limit Z High (V) (float32)
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        -	Error described in the Response message>Body section
+        """
+        return self.quickSend("Piezo.XYZLimitsSet", [Enable_limits, Limit_X_low_V, Limit_X_high_V, Limit_Y_low_V, Limit_Y_high_V, Limit_Z_low_V, Limit_Z_high_V],
+                              ["H", "f", "f", "f", "f", "f", "f"], [])
+
+    def Piezo_XYZLimitsGet(self):
+        """
+        Piezo.XYZLimitsGet
+        Returns the XYZ voltage limits from the Piezo Calibration module.
+        Arguments: None
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -	Enable limits (unsigned int16) displays the status of the voltage limits, 0=Off, 1=On
+        -	Voltage limit X Low (V) (float32) 
+        -	Voltage limit X High (V) (float32) 
+        -	Voltage limit Y Low (V) (float32) 
+        -	Voltage limit Y High (V) (float32)
+        -	Voltage limit Z Low (V) (float32) 
+        -	Voltage limit Z High (V) (float32)
+        -	Error described in the Response message>Body section
+        """
+        return self.quickSend("Piezo.XYZLimitsGet", [], [], ["H", "f", "f", "f", "f", "f", "f"])
+
+    def Piezo_HystOnOffSet(self, On_Off):
+        """
+        Piezo.HystOnOffSet
+        Switches the Hysteresis Compensation on-off in the Piezo Configuration module.
+        Arguments: 
+        -	On/Off (unsigned int32) activates or deactivates the hysteresis compensation, 0=Off, 1=On
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -	Error described in the Response message>Body section
+        """
+        return self.quickSend("Piezo.HystOnOffSet", [On_Off], ["I"], [])
+
+    def Piezo_HystOnOffGet(self):
+        """
+        Piezo.HystOnOffGet
+        Returns the status (on-off) of the Hysteresis Compensation in the Piezo Configuration module.
+        Arguments: None
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -	On/Off (unsigned int32) displays the status of the hysteresis compensation, 0=Off, 1=On
+        -	Error described in the Response message>Body section
+        
+        """
+        return self.quickSend("Piezo.HystOnOffGet", [], [], ["I"])
+
+    def Piezo_HystValsSet(self, Fast_axis__number_points_X, Fast_axis_points_X, Fast_axis_number_points_Y, Fast_axis_points_Y, Slow_axis_number_points_X, Slow_axis_points_X, Slow_axis_number_points_Y, Slow_axis_points_Y):
+        """
+        Piezo.HystValsSet
+        Sets and applies the hysteresis compensation values in the Piezo Calibration module.
+        Arguments: 
+        -	Number of fast axis points (int) is the number of hysteresis points for the fast axis, and it defines the size of the following 1D array
+        -	Fast axis X hysteresis points (1D array float32) is a 1D array of the X coordinates of the hysteresis points for the fast axis
+        -	Number of fast axis points (int) is the number of hysteresis points for the fast axis, and it defines the size of the following 1D array
+        -	Fast axis Y hysteresis points (1D array float32) is a 1D array of the Y coordinates of the hysteresis points for the fast axis
+        -	Number of slow axis points (int) is the number of hysteresis points for the slow axis, and it defines the size of the following 1D array
+        -	Slow axis X hysteresis points (1D array float32) is a 1D array of the X coordinates of the hysteresis points for the slow axis
+        -	Number of slow axis points (int) is the number of hysteresis points for the slow axis, and it defines the size of the following 1D array
+        -	Slow axis Y hysteresis points (1D array float32) is a 1D array of the Y coordinates of the hysteresis points for the slow axis
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -	Error described in the Response message>Body section
+        """
+        return self.quickSend("Piezo.HystValsSet", [Fast_axis__number_points_X, Fast_axis_points_X, Fast_axis_number_points_Y, Fast_axis_points_Y, Slow_axis_number_points_X, Slow_axis_points_X, Slow_axis_number_points_Y, Slow_axis_points_Y], ["i", "*f", "i", "*f", "i", "*f", "i", "*f"], [])
+
+    def Piezo_HystValsGet(self):
+        """
+        Piezo.HystValsGet
+        Returns the hysteresis compensation values in the Piezo Calibration module.
+        Arguments: None
+        Return arguments (if Send response back flag is set to True when sending request message):
+        
+        -	Number of fast axis points (int) is the number of hysteresis points for the fast axis, and it defines the size of the following 1D array
+        -	Fast axis X hysteresis points (1D array float32) is a 1D array of the X coordinates of the hysteresis points for the fast axis
+        -	Number of fast axis points (int) is the number of hysteresis points for the fast axis, and it defines the size of the following 1D array
+        -	Fast axis Y hysteresis points (1D array float32) is a 1D array of the Y coordinates of the hysteresis points for the fast axis
+        -	Number of slow axis points (int) is the number of hysteresis points for the slow axis, and it defines the size of the following 1D array
+        -	Slow axis X hysteresis points (1D array float32) is a 1D array of the X coordinates of the hysteresis points for the slow axis
+        -	Number of slow axis points (int) is the number of hysteresis points for the slow axis, and it defines the size of the following 1D array
+        -	Slow axis Y hysteresis points (1D array float32) is a 1D array of the Y coordinates of the hysteresis points for the slow axis
+        -	Error described in the Response message>Body section
+        """
+        return self.quickSend("Piezo.HystValsGet", [], [], ["i", "*f", "i", "*f", "i", "*f", "i", "*f"])
+
+    def Piezo_HystFileLoad(self, File_path):
+        """
+        
+        Piezo.HystFileLoad
+        Loads and applies the Hysteresis Compensation values for both axes from a .csv file in the Piezo Configuration module.
+        Arguments: 
+        -	File path size (int) is the number of characters of the file path string
+        -	File path (string) is the path of the .csv file to load
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        -	Error described in the Response message>Body section
+        """
+        return self.quickSend("Piezo.HystFileLoad", [File_path], ["+*c"], [])
+
+    def Piezo_HystFileSave(self, File_path):
+        """
+        
+        Piezo.HystFileSave
+        Saves the Hysteresis Compensation values for both axes into a .csv file from the Piezo Configuration module.
+        Arguments:
+        -	File path size (int) is the number of characters of the file path string
+        -	File path (string) is the path of the .csv file to save
+        
+        Return arguments (if Send response back flag is set to True when sending request message):
+        -	Error described in the Response message>Body section
+        """
+        return self.quickSend("Piezo.HystFileSave", [File_path], ["+*c"], [])
+
     def Scan_Action(self, Scan_action, Scan_direction):
         """
         Scan.Action
@@ -2826,7 +2970,7 @@ class Nanonis:
         return self.quickSend("Scan.BufferGet", [], [], ["i", "*i", "i", "i"])
 
     def Scan_PropsSet(self, Continuous_scan, Bouncy_scan, Autosave, Series_name,
-                      Comment, Modules_names):
+                      Comment, Modules_names, Autopaste):
         """
         Scan.PropsSet
         Configures some of the scan parameters.
@@ -2843,6 +2987,7 @@ class Nanonis:
         - Modules names number (int) is the number of elements of the modules names array
         - Modules names (1D array string) is an array of modules names strings, where each string comes
         prepended by its size in bytes
+        - Autopaste (unsigned int32) defines the paste behavior when a frame has been completed. "All" pastes all the future images. "Next" only pastes the next frame. 0 means no change, 1 is All, 2 is Next, and 3 sets this feature Off
         
         Return arguments (if Send response back flag is set to True when sending request message):
         
@@ -2851,8 +2996,8 @@ class Nanonis:
         
         """
         return self.quickSend("Scan.PropsSet",
-                              [Continuous_scan, Bouncy_scan, Autosave, Series_name, Comment, Modules_names],
-                              ["I", "I", "I", "+*c", "+*c", "+*c"], [])
+                              [Continuous_scan, Bouncy_scan, Autosave, Series_name, Comment, Modules_names, Autopaste],
+                              ["I", "I", "I", "+*c", "+*c", "+*c", "I"], [])
 
     def Scan_PropsGet(self):
         """
@@ -2877,11 +3022,11 @@ class Nanonis:
         -- Parameters columns (int) defines the number of columns of the Parameters array 
         -- Parameters (2D array string) returns the parameters that are going to be saved in the header of the image files. The size of each string item comes right before it as integer 32.
            Each row of parameters belongs to a different module.
-
+        -- Autopaste (unsigned int32) defines the paste behavior when a frame has been completed. "All" pastes all the future images. "Next" only pastes the next frame. 0 means no change, 1 is All, 2 is Next, and 3 sets this feature Off
         -- Error described in the Response message&gt;Body section
         
         """
-        return self.quickSend("Scan.PropsGet", [], [], ["I", "I", "I", "i", "*-c", "i", "*-c", "i", "i", "*+c", "i", "*+i", "i", "i", "*+c"])
+        return self.quickSend("Scan.PropsGet", [], [], ["I", "I", "I", "i", "*-c", "i", "*-c", "i", "i", "*+c", "i", "*+i", "i", "i", "*+c", "I"])
 
     def Scan_SpeedSet(self, Forward_linear_speed_m_s, Backward_linear_speed_m_s, Forward_time_per_line_s,
                       Backward_time_per_line_s, Keep_parameter_constant, Speed_ratio):
