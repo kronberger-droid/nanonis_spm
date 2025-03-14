@@ -52,16 +52,22 @@ We hereby ensure that the arguments are of the correct size.
 
 ## Change Log
 
-### 1.0.3
-Added the function Util.VersionGet to get the software version, the MCVA5 preamplifier functions, the V5e Generic PI Controller functions, and all the MultiProbe functions (Bias, Current, Z-Controller, and scanner control) needed in a MultiProbe system. 
-### 1.0.4
-Fixed the indentation of two Script functions (Script.Open and Script.LUTOpen) which triggered an error when trying to use the class.
-Changed the behavior of the returnDebugInfo function so that nothing is printed out if there is no error.
+### 1.0.6
+Added functions to control the hysteresis compensation in the Piezo Configuration module.
+Added a function to return the limits of a Bias Sweep.
+Added a new setting in the functions Scan_PropsGet and Scan_PropsSet to get-set the auto-paste feature in the Scan Control module.
 ### 1.0.5
 Fixed some missing variable names in the function declaration of some MCVA and MProbe functions.
 Fixed missing input arguments for Motor_FreqAmpGet and Motor_PosGet functions.
 Added all functions for the Function Generators 1Ch and 2Chs.
 Fixed the SpectrumAnlzr_DataGet function.
+### 1.0.4
+Fixed the indentation of two Script functions (Script.Open and Script.LUTOpen) which triggered an error when trying to use the class.
+Changed the behavior of the returnDebugInfo function so that nothing is printed out if there is no error.
+### 1.0.3
+Added the function Util.VersionGet to get the software version, the MCVA5 preamplifier functions, the V5e Generic PI Controller functions, and all the MultiProbe functions (Bias, Current, Z-Controller, and scanner control) needed in a MultiProbe system. 
+
+
 Removed a check in the ParseError function which set a different error string offset for functions returning exactly 8 bytes.
 Changed the data types of the returning arguments for the BiasSpectr_ChsGet and ZSpectr_ChsGet functions.
 
