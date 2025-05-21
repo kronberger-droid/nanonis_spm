@@ -52,6 +52,8 @@ We hereby ensure that the arguments are of the correct size.
 
 ## Change Log
 
+### 1.0.8
+Added missing argument to Motor_StartClosedLoop function.
 ### 1.0.7
 Fixed the programmatic control of the Oscilloscope High Resolution graph, where some functions now include an input for channel selection to support the 4-channel version of this graph.
 ### 1.0.6
