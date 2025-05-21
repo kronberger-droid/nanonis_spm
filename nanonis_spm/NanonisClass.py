@@ -4019,7 +4019,7 @@ class Nanonis:
         return self.quickSend("Motor.StartMove", [Direction, Number_of_steps, Group, Wait_until_finished],
                               ["I", "H", "I", "I"], [])
 
-    def Motor_StartClosedLoop(self, Absolute_relative, Target_Xm, Target_Ym, Target_Zm, Wait_until_finished):
+    def Motor_StartClosedLoop(self, Absolute_relative, Target_Xm, Target_Ym, Target_Zm, Wait_until_finished, Group):
         """
         Motor.StartClosedLoop
         Moves the coarse positioning device (motor, piezo actuator…) in closed loop. This is not supported by all motor control modules.
@@ -4029,17 +4029,19 @@ class Nanonis:
         -- Target Y(m) (float64) is the Y target position to move in meters
         -- Target Z(m) (float64) is the Z target position to move in meters
         -- Wait until finished (unsigned int32) defines if this function only returns (1_True) when the motor reaches its destination or the movement stops
+        -- Group (unsigned int32) is the selection of the groups defined in the motor control module. If the motor doesn’t support the selection of groups, set it to 0. 
+        Valid values are 0=Group 1, 1=Group 2, 2=Group 3, 3=Group 4, 4=Group 5, 5=Group 6
+        
         
         Return arguments (if Send response back flag is set to True when sending request message):
         
         -- Error described in the Response message&gt;Body section
         
         
-        <font size_"24">
         """
         return self.quickSend("Motor.StartClosedLoop",
-                              [Absolute_relative, Target_Xm, Target_Ym, Target_Zm, Wait_until_finished],
-                              ["I", "d", "d", "d", "I"], [])
+                              [Absolute_relative, Target_Xm, Target_Ym, Target_Zm, Wait_until_finished, Group],
+                              ["I", "d", "d", "d", "I", "I"], [])
 
     def Motor_StopMove(self):
         """
