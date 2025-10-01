@@ -9226,7 +9226,7 @@ class Nanonis:
 
         """
         return self.quickSend("Osci1T.TrigSet", [TriggerMode, TriggerSlope, TriggerLevel, TriggerHysteresis],
-                              ["H", "H", "f", "f"], [])
+                              ["H", "H", "d", "d"], [])
 
     def Osci1T_TrigGet(self, TriggerMode, TriggerChannel, TriggerSlope, TriggerLevel, TriggerHysterstis, TriggerPos):
         """
